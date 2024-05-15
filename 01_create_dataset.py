@@ -1,6 +1,7 @@
 import cv2
 import time
 import sqlite3
+import psycopg2
 import os
 
 def generate_uid():
@@ -14,18 +15,24 @@ time.sleep(1)
 
 # Connect to SQLite database
 try:
-    conn = sqlite3.connect('customer_faces_data.db')
+    conn = psycopg2.connect(
+        dbname="facial",
+        user="postgres",
+        password="vava635",
+        host="localhost",
+        port="5432"
+    )
     c = conn.cursor()
-    #print("Successfully connected to the database")
-except sqlite3.Error as e:
+    print("Successfully connected to the database")
+except psycopg2.Error as e:
     print("SQLite error:", e)
 
 # Create a table to store face data if it doesn't exist
 try:
     c.execute('''CREATE TABLE IF NOT EXISTS customers
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_uid TEXT, customer_name TEXT, image_path TEXT)''')
-    #print("Table 'customers' created successfully")
-except sqlite3.Error as e:
+                 (id SERIAL PRIMARY KEY , customer_uid TEXT, customer_name TEXT, image_path TEXT)''')
+    print("Table 'customers' created successfully")
+except psycopg2.Error as e:
     print("SQLite error:", e)
 
 # For each person, one face id
@@ -116,7 +123,7 @@ if len(faces) > 0:
 
                 # Save face data to database
                 try:
-                    c.execute("INSERT INTO customers (customer_uid, customer_name, image_path) VALUES (?, ?, ?)", (customer_uid, customer_name, image_path))
+                    c.execute("INSERT INTO customers (customer_uid, customer_name, image_path) VALUES (%s, %s, %s)", (customer_uid, customer_name, image_path))
                     conn.commit()
                     #print("Image inserted into database successfully")
                 except sqlite3.Error as e:
