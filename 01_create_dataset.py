@@ -16,7 +16,7 @@ time.sleep(1)
 # Connect to SQLite database
 try:
     conn = psycopg2.connect(
-        dbname="facial",
+        dbname="facial ",
         user="postgres",
         password="vava635",
         host="localhost",
